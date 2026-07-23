@@ -2,7 +2,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { PencilSimple } from "@phosphor-icons/react";
 import { useParams } from "react-router-dom";
 import { api, ApiError } from "../api";
-import { DetailCard, DetailRow, ErrorState, FormActions, LoadingState, PageHeader, SecondaryButton, StatusPill, TextField } from "../components";
+import { DetailCard, DetailRow, ErrorState, FormActions, LoadingState, PageHeader, SecondaryButton, StatusPill, TextField, ToggleField } from "../components";
 import { formatDate, useApiData } from "../hooks";
 import type { Order } from "../types";
 
@@ -12,6 +12,7 @@ export default function OrderDetailPage() {
   const [showUpdate, setShowUpdate] = useState(false);
   const [status, setStatus] = useState("");
   const [note, setNote] = useState("");
+  const [shareNote, setShareNote] = useState(false);
   const [tracking, setTracking] = useState("");
   const [estimate, setEstimate] = useState("");
   const [busy, setBusy] = useState(false);
@@ -24,9 +25,9 @@ export default function OrderDetailPage() {
     try {
       await api(`/orders/${encodeURIComponent(orderId)}/status`, {
         method: "POST",
-        body: { status_label: status, note: note || null, tracking_reference: tracking || null, estimated_delivery: estimate || null }
+        body: { status_label: status, note: note || null, share_note_with_customer: shareNote, tracking_reference: tracking || null, estimated_delivery: estimate || null }
       });
-      setShowUpdate(false); setStatus(""); setNote(""); setTracking(""); setEstimate("");
+      setShowUpdate(false); setStatus(""); setNote(""); setShareNote(false); setTracking(""); setEstimate("");
       await reload();
     } catch (caught) {
       setSubmitError(caught instanceof ApiError ? caught.message : "Unable to update this status");
@@ -50,10 +51,16 @@ export default function OrderDetailPage() {
               <h2>Update order status</h2>
               <div className="form-grid">
                 <TextField label="Current status" value={status} onChange={setStatus} required placeholder="Loaded for dispatch" />
-                <TextField label="Note" value={note} onChange={setNote} placeholder="Optional factual note" />
+                <TextField label="Status note" value={note} onChange={setNote} placeholder="Optional factual note" />
                 <TextField label="Tracking reference" value={tracking} onChange={setTracking} placeholder="Optional" />
                 <TextField label="Estimated delivery" value={estimate} onChange={setEstimate} placeholder="Optional" />
               </div>
+              <ToggleField
+                label="Share note with customer"
+                description="Off keeps the note inside the admin timeline. Tracking and delivery details remain customer-visible."
+                checked={shareNote}
+                onChange={setShareNote}
+              />
               {submitError && <ErrorState message={submitError} />}
               <FormActions onCancel={() => setShowUpdate(false)} busy={busy} submitLabel="Save status" />
             </form>
@@ -81,7 +88,7 @@ export default function OrderDetailPage() {
                 {[...(item.status_history || [])].reverse().map((event, index) => (
                   <div className="timeline-event" key={`${event.at || index}-${event.label}`}>
                     <i aria-hidden="true" />
-                    <span className="primary-cell"><strong>{event.label}</strong><small>{[event.note, event.tracking_reference && `Ref: ${event.tracking_reference}`, event.estimated_delivery && `ETA: ${event.estimated_delivery}`].filter(Boolean).join(" · ") || event.source || "Status update"}</small></span>
+                    <span className="primary-cell"><strong>{event.label}</strong><small>{[event.note && `${event.note_audience === "customer" ? "Customer note" : "Internal note"}: ${event.note}`, event.tracking_reference && `Ref: ${event.tracking_reference}`, event.estimated_delivery && `ETA: ${event.estimated_delivery}`].filter(Boolean).join(" · ") || event.source || "Status update"}</small></span>
                     <span>{formatDate(event.at, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</span>
                   </div>
                 ))}

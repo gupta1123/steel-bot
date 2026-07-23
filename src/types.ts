@@ -41,6 +41,7 @@ export type StatusEvent = {
   at?: string;
   source?: string;
   note?: string;
+  note_audience?: "internal" | "customer";
   tracking_reference?: string;
   estimated_delivery?: string;
   updated_by_name?: string;
