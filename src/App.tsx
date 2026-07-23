@@ -12,7 +12,6 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import ProductFormPage from "./pages/ProductFormPage";
 import OrdersListPage from "./pages/OrdersListPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
-import SettingsPage from "./pages/SettingsPage";
 
 function ProtectedLayout({ authenticated }: { authenticated: boolean }) {
   const location = useLocation();
@@ -71,7 +70,6 @@ export default function App() {
         <Route path="products/:productKey/edit" element={<ProductFormPage />} />
         <Route path="orders" element={<OrdersListPage />} />
         <Route path="orders/:orderId" element={<OrderDetailPage />} />
-        <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

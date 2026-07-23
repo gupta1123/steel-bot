@@ -91,13 +91,3 @@ export type Product = {
   units: string[];
   active: boolean;
 };
-
-export type AuditEvent = {
-  id?: number;
-  actor_username: string;
-  action: string;
-  entity_type: string;
-  entity_key: string;
-  summary: string;
-  created_at: string;
-};

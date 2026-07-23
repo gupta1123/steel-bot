@@ -4,7 +4,6 @@ import {
   CaretRight,
   Check,
   Cube,
-  GearSix,
   House,
   MagnifyingGlass,
   Package,
@@ -24,8 +23,7 @@ const navigation = [
   { to: "/orders", label: "Orders", icon: Package },
   { to: "/customers", label: "Customers", icon: UsersThree },
   { to: "/employees", label: "Employees", icon: UserFocus },
-  { to: "/products", label: "Products", icon: Cube },
-  { to: "/settings", label: "Settings", icon: GearSix }
+  { to: "/products", label: "Products", icon: Cube }
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {

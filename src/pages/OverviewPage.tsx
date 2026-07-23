@@ -1,67 +1,156 @@
 import { Cube, Package, UsersThree } from "@phosphor-icons/react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ErrorState, LoadingState, PageHeader, RowLink, StatusPill } from "../components";
-import { formatDate, useApiData } from "../hooks";
-import type { OrderListItem } from "../types";
+import { EmptyState, ErrorState, LoadingState, PageHeader } from "../components";
+import { useApiData } from "../hooks";
 
-type Overview = {
-  data_source: { storage_backend: string; live_whatsapp_shared: boolean };
-  counts: { customers: number; employees: number; products: number; orders: number };
-  recent_orders: OrderListItem[];
+type Period = "30d" | "90d" | "365d" | "all";
+
+type AnalyticsItem = {
+  label: string;
+  count?: number;
+  order_count?: number;
+  percentage: number;
 };
 
-export default function OverviewPage() {
-  const { data, loading, error, reload } = useApiData<Overview>("/overview");
-  const navigate = useNavigate();
+type Overview = {
+  period: { key: Period; label: string };
+  summary: {
+    orders: number;
+    ordering_customers: number;
+    products_ordered: number;
+    repeat_customers: number;
+  };
+  status_breakdown: AnalyticsItem[];
+  product_demand: AnalyticsItem[];
+  monthly_orders: { key: string; label: string; count: number }[];
+  customer_analysis: {
+    total_active: number;
+    repeat: number;
+    one_time: number;
+    without_orders: number;
+    assigned: number;
+    unassigned: number;
+  };
+};
+
+function AnalyticsBars({ items, valueKey }: { items: AnalyticsItem[]; valueKey: "count" | "order_count" }) {
+  if (items.length === 0) {
+    return <EmptyState title="No data in this period" message="Choose a wider date range to see the breakdown." />;
+  }
   return (
-    <div className="page">
-      <PageHeader title="Overview" description="A quick view of what needs your attention." />
+    <div className="analytics-bars">
+      {items.map((item) => (
+        <div className="analytics-bar-row" key={item.label}>
+          <div className="analytics-bar-label">
+            <strong>{item.label}</strong>
+            <span>
+              {item[valueKey] || 0}
+              {valueKey === "order_count" ? ` ${(item[valueKey] || 0) === 1 ? "order" : "orders"}` : ""}
+            </span>
+          </div>
+          <div className="analytics-track" aria-label={`${item.label}: ${item.percentage}%`}>
+            <span style={{ width: `${Math.max(item.percentage, 3)}%` }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function OverviewPage() {
+  const [period, setPeriod] = useState<Period>("90d");
+  const { data, loading, error, reload } = useApiData<Overview>(`/overview?window=${period}`);
+  const navigate = useNavigate();
+  const maximumMonthlyOrders = Math.max(...(data?.monthly_orders.map((item) => item.count) || [0]), 1);
+
+  return (
+    <div className="page overview-page">
+      <PageHeader
+        title="Overview"
+        description="Performance across orders, products and customer activity."
+        action={(
+          <label className="period-control">
+            <span className="sr-only">Analysis period</span>
+            <select value={period} onChange={(event) => setPeriod(event.target.value as Period)}>
+              <option value="30d">Last 30 days</option>
+              <option value="90d">Last 90 days</option>
+              <option value="365d">Last 12 months</option>
+              <option value="all">All time</option>
+            </select>
+          </label>
+        )}
+      />
       {loading && <LoadingState />}
       {error && <ErrorState message={error} onRetry={reload} />}
       {data && (
         <>
-          <div className={`data-source-banner ${data.data_source.live_whatsapp_shared ? "live" : "local"}`}>
-            <strong>{data.data_source.live_whatsapp_shared ? "Live WhatsApp data" : "Local demo data"}</strong>
-            <span>
-              {data.data_source.live_whatsapp_shared
-                ? "Admin changes and WhatsApp orders use the same Supabase database."
-                : "Changes here do not affect the live WhatsApp bot. Connect this backend to Supabase before testing live sync."}
-            </span>
-          </div>
-          <section className="summary-grid" aria-label="Business summary">
-            <button type="button" onClick={() => navigate("/customers")}>
-              <span className="summary-icon"><UsersThree size={22} /></span>
-              <span><small>Customers</small><strong>{data.counts.customers}</strong></span>
-            </button>
+          <section className="metric-grid" aria-label="Performance summary">
             <button type="button" onClick={() => navigate("/orders")}>
-              <span className="summary-icon"><Package size={22} /></span>
-              <span><small>Orders</small><strong>{data.counts.orders}</strong></span>
+              <span className="metric-icon"><Package size={21} /></span>
+              <span className="metric-copy"><small>Orders</small><strong>{data.summary.orders}</strong><em>{data.period.label}</em></span>
+            </button>
+            <button type="button" onClick={() => navigate("/customers")}>
+              <span className="metric-icon"><UsersThree size={21} /></span>
+              <span className="metric-copy"><small>Ordering customers</small><strong>{data.summary.ordering_customers}</strong><em>{data.period.label}</em></span>
             </button>
             <button type="button" onClick={() => navigate("/products")}>
-              <span className="summary-icon"><Cube size={22} /></span>
-              <span><small>Products</small><strong>{data.counts.products}</strong></span>
+              <span className="metric-icon"><Cube size={21} /></span>
+              <span className="metric-copy"><small>Products ordered</small><strong>{data.summary.products_ordered}</strong><em>{data.period.label}</em></span>
+            </button>
+            <button type="button" onClick={() => navigate("/customers")}>
+              <span className="metric-icon"><UsersThree size={21} /></span>
+              <span className="metric-copy"><small>Repeat customers</small><strong>{data.summary.repeat_customers}</strong><em>More than one order</em></span>
             </button>
           </section>
-          <section className="list-section">
-            <div className="section-heading">
-              <div><h2>Recent orders</h2><p>The five latest order updates.</p></div>
-              <button type="button" onClick={() => navigate("/orders")}>View all</button>
-            </div>
-            <div className="data-list compact-list">
-              <div className="list-head order-grid">
-                <span>Order</span><span>Customer</span><span>Status</span><span>Updated</span><span />
+
+          <div className="analytics-layout">
+            <section className="analytics-card status-analysis">
+              <div className="analytics-heading">
+                <div><h2>Order status</h2><p>Where orders currently sit in the workflow.</p></div>
+                <span>{data.summary.orders} total</span>
               </div>
-              {data.recent_orders.map((order) => (
-                <div className="list-row order-grid" key={order.order_id}>
-                  <div className="primary-cell"><strong>{order.order_id}</strong><small>{order.item_summary}</small></div>
-                  <span>{order.customer_name || "Unknown"}</span>
-                  <StatusPill label={order.status_label} />
-                  <span>{formatDate(order.updated_at)}</span>
-                  <RowLink to={`/orders/${encodeURIComponent(order.order_id)}`} label={`Open ${order.order_id}`} />
-                </div>
-              ))}
-            </div>
-          </section>
+              <AnalyticsBars items={data.status_breakdown} valueKey="count" />
+            </section>
+
+            <section className="analytics-card customer-analysis">
+              <div className="analytics-heading">
+                <div><h2>Customer activity</h2><p>How active customers are engaging.</p></div>
+                <span>{data.customer_analysis.total_active} active</span>
+              </div>
+              <div className="customer-stat-list">
+                <div><span>Repeat customers</span><strong>{data.customer_analysis.repeat}</strong></div>
+                <div><span>One-time customers</span><strong>{data.customer_analysis.one_time}</strong></div>
+                <div><span>No orders in period</span><strong>{data.customer_analysis.without_orders}</strong></div>
+              </div>
+              <div className="coverage-note">
+                <span>Employee coverage</span>
+                <strong>{data.customer_analysis.assigned} assigned · {data.customer_analysis.unassigned} unassigned</strong>
+              </div>
+            </section>
+
+            <section className="analytics-card volume-analysis">
+              <div className="analytics-heading">
+                <div><h2>Order volume</h2><p>Monthly orders within the selected period.</p></div>
+              </div>
+              <div className="volume-chart" aria-label="Monthly order volume">
+                {data.monthly_orders.map((item) => (
+                  <div className="volume-column" key={item.key} aria-label={`${item.label}: ${item.count} orders`}>
+                    <strong>{item.count}</strong>
+                    <div><span style={{ height: `${Math.max((item.count / maximumMonthlyOrders) * 100, item.count ? 8 : 2)}%` }} /></div>
+                    <small>{item.label}</small>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="analytics-card product-analysis">
+              <div className="analytics-heading">
+                <div><h2>Product demand</h2><p>Products appearing across the most orders.</p></div>
+              </div>
+              <AnalyticsBars items={data.product_demand} valueKey="order_count" />
+            </section>
+          </div>
         </>
       )}
     </div>
