@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
-import { api, ApiError } from "./api";
+import { ADMIN_UNAUTHORIZED_EVENT, api, ApiError } from "./api";
 import { AppShell, LoadingState } from "./components";
 import LoginPage from "./pages/LoginPage";
 import OverviewPage from "./pages/OverviewPage";
@@ -27,6 +27,8 @@ export default function App() {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
+    const handleUnauthorized = () => setAuthenticated(false);
+    window.addEventListener(ADMIN_UNAUTHORIZED_EVENT, handleUnauthorized);
     api<{ ok: boolean }>("/auth/me")
       .then(() => setAuthenticated(true))
       .catch((error: unknown) => {
@@ -36,6 +38,7 @@ export default function App() {
         setAuthenticated(false);
       })
       .finally(() => setChecking(false));
+    return () => window.removeEventListener(ADMIN_UNAUTHORIZED_EVENT, handleUnauthorized);
   }, []);
 
   if (checking) {

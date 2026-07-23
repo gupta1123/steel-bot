@@ -1,5 +1,7 @@
 let csrfToken = "";
 
+export const ADMIN_UNAUTHORIZED_EVENT = "steel-admin-unauthorized";
+
 export class ApiError extends Error {
   status: number;
 
@@ -30,6 +32,10 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== "undefined") {
+      clearSessionToken();
+      window.dispatchEvent(new Event(ADMIN_UNAUTHORIZED_EVENT));
+    }
     throw new ApiError(response.status, payload.detail || "Something went wrong");
   }
   if (payload.csrf_token) csrfToken = payload.csrf_token;

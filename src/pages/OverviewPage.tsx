@@ -5,6 +5,7 @@ import { formatDate, useApiData } from "../hooks";
 import type { OrderListItem } from "../types";
 
 type Overview = {
+  data_source: { storage_backend: string; live_whatsapp_shared: boolean };
   counts: { customers: number; employees: number; products: number; orders: number };
   recent_orders: OrderListItem[];
 };
@@ -19,6 +20,14 @@ export default function OverviewPage() {
       {error && <ErrorState message={error} onRetry={reload} />}
       {data && (
         <>
+          <div className={`data-source-banner ${data.data_source.live_whatsapp_shared ? "live" : "local"}`}>
+            <strong>{data.data_source.live_whatsapp_shared ? "Live WhatsApp data" : "Local demo data"}</strong>
+            <span>
+              {data.data_source.live_whatsapp_shared
+                ? "Admin changes and WhatsApp orders use the same Supabase database."
+                : "Changes here do not affect the live WhatsApp bot. Connect this backend to Supabase before testing live sync."}
+            </span>
+          </div>
           <section className="summary-grid" aria-label="Business summary">
             <button type="button" onClick={() => navigate("/customers")}>
               <span className="summary-icon"><UsersThree size={22} /></span>

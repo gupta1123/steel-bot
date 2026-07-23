@@ -103,6 +103,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .row-link:hover { background: var(--blue-soft); }
 
 .summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.data-source-banner { min-height: 58px; display: flex; align-items: center; gap: 10px; margin: -10px 0 28px; padding: 12px 16px; border: 1px solid; border-radius: 10px; font-size: 13px; }
+.data-source-banner strong { flex: 0 0 auto; }
+.data-source-banner span { color: var(--muted); }
+.data-source-banner.live { color: var(--green); border-color: #bfe6d5; background: var(--green-soft); }
+.data-source-banner.local { color: var(--amber); border-color: #f0d39d; background: var(--amber-soft); }
 .summary-grid button { min-height: 106px; display: flex; align-items: center; gap: 16px; padding: 20px; text-align: left; border: 1px solid var(--line); border-radius: 12px; background: white; cursor: pointer; }
 .summary-grid button:hover { border-color: #b9c8df; box-shadow: 0 8px 22px rgba(22, 42, 74, .05); }
 .summary-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 10px; color: var(--blue); background: var(--blue-soft); }

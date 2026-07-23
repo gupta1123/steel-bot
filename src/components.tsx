@@ -17,7 +17,7 @@ import {
   X
 } from "@phosphor-icons/react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { api, clearSessionToken } from "./api";
+import { ADMIN_UNAUTHORIZED_EVENT, api, clearSessionToken } from "./api";
 
 const navigation = [
   { to: "/", label: "Overview", icon: House },
@@ -34,6 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   async function logout() {
     await api("/auth/logout", { method: "POST" }).catch(() => undefined);
     clearSessionToken();
+    window.dispatchEvent(new Event(ADMIN_UNAUTHORIZED_EVENT));
     navigate("/login", { replace: true });
   }
 
