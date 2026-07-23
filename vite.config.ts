@@ -3,23 +3,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   base: "/admin/",
-  plugins: [
-    react(),
-    {
-      name: "admin-trailing-slash",
-      configureServer(server) {
-        server.middlewares.use((request, response, next) => {
-          if ((request as { url?: string }).url === "/admin") {
-            response.statusCode = 302;
-            response.setHeader("Location", "/admin/");
-            response.end();
-            return;
-          }
-          next();
-        });
-      }
-    }
-  ],
+  plugins: [react()],
   server: {
     host: "0.0.0.0",
     allowedHosts: ["terminal.local"],
