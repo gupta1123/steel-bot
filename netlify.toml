@@ -12,9 +12,21 @@
   force = true
 
 [[redirects]]
+  from = "/health"
+  to = "https://steel-whatsapp-solutionnyx-8b41f30f3c58.herokuapp.com/health"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/admin/assets/*"
   to = "/assets/:splat"
   status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin/"
+  status = 301
+  force = true
 
 [[redirects]]
   from = "/admin/*"
@@ -25,3 +37,4 @@
   from = "/"
   to = "/admin/"
   status = 302
+  force = true
