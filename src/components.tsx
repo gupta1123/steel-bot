@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import {
   ArrowLeft,
   CaretRight,
+  ChatCircleDots,
   Check,
   Cube,
   House,
@@ -10,7 +11,6 @@ import {
   Plus,
   SignOut,
   SpinnerGap,
-  StackSimple,
   UserFocus,
   UsersThree,
   X
@@ -40,7 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark"><StackSimple weight="fill" size={24} /></span>
+          <span className="brand-mark"><ChatCircleDots weight="bold" size={22} /></span>
           <span>Steel Assist</span>
         </div>
         <nav className="primary-nav" aria-label="Primary navigation">

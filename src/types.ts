@@ -75,6 +75,11 @@ export type Order = {
 export type ProductListItem = {
   product_key: string;
   label: string;
+  category_key?: string | null;
+  category_label?: string | null;
+  manufacturer?: string | null;
+  base_price?: number | null;
+  initial_stock_tons?: number | null;
   active: boolean;
   sizes: string[];
   units: string[];
@@ -84,6 +89,11 @@ export type ProductListItem = {
 export type Product = {
   product_key: string;
   label: string;
+  category_key?: string | null;
+  category_label?: string | null;
+  manufacturer?: string | null;
+  base_price?: number | null;
+  initial_stock_tons?: number | null;
   aliases: string[];
   sizes: string[];
   grades: string[];

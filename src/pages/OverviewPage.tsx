@@ -1,4 +1,4 @@
-import { Cube, Package, UsersThree } from "@phosphor-icons/react";
+import { ArrowsClockwise, Package, Tag, UsersThree } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EmptyState, ErrorState, LoadingState, PageHeader } from "../components";
@@ -59,7 +59,7 @@ function AnalyticsBars({ items, valueKey }: { items: AnalyticsItem[]; valueKey: 
 }
 
 export default function OverviewPage() {
-  const [period, setPeriod] = useState<Period>("90d");
+  const [period, setPeriod] = useState<Period>("30d");
   const { data, loading, error, reload } = useApiData<Overview>(`/overview?window=${period}`);
   const navigate = useNavigate();
   const maximumMonthlyOrders = Math.max(...(data?.monthly_orders.map((item) => item.count) || [0]), 1);
@@ -95,11 +95,11 @@ export default function OverviewPage() {
               <span className="metric-copy"><small>Ordering customers</small><strong>{data.summary.ordering_customers}</strong><em>{data.period.label}</em></span>
             </button>
             <button type="button" onClick={() => navigate("/products")}>
-              <span className="metric-icon"><Cube size={21} /></span>
+              <span className="metric-icon"><Tag size={21} /></span>
               <span className="metric-copy"><small>Products ordered</small><strong>{data.summary.products_ordered}</strong><em>{data.period.label}</em></span>
             </button>
             <button type="button" onClick={() => navigate("/customers")}>
-              <span className="metric-icon"><UsersThree size={21} /></span>
+              <span className="metric-icon"><ArrowsClockwise size={21} /></span>
               <span className="metric-copy"><small>Repeat customers</small><strong>{data.summary.repeat_customers}</strong><em>More than one order</em></span>
             </button>
           </section>
@@ -134,13 +134,15 @@ export default function OverviewPage() {
                 <div><h2>Order volume</h2><p>Monthly orders within the selected period.</p></div>
               </div>
               <div className="volume-chart" aria-label="Monthly order volume">
-                {data.monthly_orders.map((item) => (
-                  <div className="volume-column" key={item.key} aria-label={`${item.label}: ${item.count} orders`}>
-                    <strong>{item.count}</strong>
-                    <div><span style={{ height: `${Math.max((item.count / maximumMonthlyOrders) * 100, item.count ? 8 : 2)}%` }} /></div>
-                    <small>{item.label}</small>
-                  </div>
-                ))}
+                {data.monthly_orders.length === 0
+                  ? <EmptyState title="No orders in this period" message="Order volume will appear here once orders are placed." />
+                  : data.monthly_orders.map((item) => (
+                    <div className="volume-column" key={item.key} aria-label={`${item.label}: ${item.count} orders`}>
+                      <strong>{item.label}: {item.count} {item.count === 1 ? "order" : "orders"}</strong>
+                      <div><span style={{ height: `${Math.max((item.count / maximumMonthlyOrders) * 100, item.count ? 8 : 2)}%` }} /></div>
+                      <small>{item.label}</small>
+                    </div>
+                  ))}
               </div>
             </section>
 
