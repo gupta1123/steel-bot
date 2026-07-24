@@ -12,7 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../api";
-import { EmptyState, ErrorState, LoadingState, TextField, ToggleField } from "../components";
+import { EmptyState, ErrorState, LoadingState } from "../components";
 import { formatDate, useApiData } from "../hooks";
 import type { LineItem, Order, StatusEvent } from "../types";
 
@@ -21,6 +21,8 @@ const statusTones: Record<string, string> = {
   Processing: "processing",
   Completed: "completed"
 };
+
+const statusOptions = ["Order received", "Processing", "Completed"];
 
 function lineItemTitle(line: LineItem) {
   return [line.product_label || "Item", line.size, line.grade].filter(Boolean).join(" · ");
@@ -46,10 +48,6 @@ export default function OrderDetailPage() {
   const { data, loading, error, reload } = useApiData<{ item: Order }>(`/orders/${encodeURIComponent(orderId)}`);
   const [showUpdate, setShowUpdate] = useState(false);
   const [status, setStatus] = useState("");
-  const [note, setNote] = useState("");
-  const [shareNote, setShareNote] = useState(false);
-  const [tracking, setTracking] = useState("");
-  const [estimate, setEstimate] = useState("");
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const item = data?.item;
@@ -67,8 +65,6 @@ export default function OrderDetailPage() {
     return [{ label: currentStatus, at: item.updated_at || item.created_at, source: "Current stored status" }];
   }, [currentStatus, item]);
 
-  const previousStatuses = useMemo(() => Array.from(new Set(statusHistory.map((event) => event.label).filter(Boolean))), [statusHistory]);
-
   useEffect(() => {
     if (!showUpdate) return undefined;
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -79,11 +75,7 @@ export default function OrderDetailPage() {
   }, [busy, showUpdate]);
 
   function openStatusUpdate() {
-    setStatus(currentStatus === "Unknown" ? "" : currentStatus);
-    setNote("");
-    setShareNote(false);
-    setTracking("");
-    setEstimate("");
+    setStatus(statusOptions.includes(currentStatus) ? currentStatus : "");
     setSubmitError("");
     setShowUpdate(true);
   }
@@ -100,11 +92,7 @@ export default function OrderDetailPage() {
       await api(`/orders/${encodeURIComponent(orderId)}/status`, {
         method: "POST",
         body: {
-          status_label: status,
-          note: note || null,
-          share_note_with_customer: shareNote,
-          tracking_reference: tracking || null,
-          estimated_delivery: estimate || null
+          status_label: status
         }
       });
       setShowUpdate(false);
@@ -238,23 +226,12 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="status-modal-body">
                   <label className="field">
-                    <span>New status</span>
-                    <input list="order-status-history" value={status} onChange={(event) => setStatus(event.target.value)} placeholder="Enter the current operational status" required autoFocus />
-                    <datalist id="order-status-history">
-                      {previousStatuses.map((value) => <option value={value} key={value} />)}
-                    </datalist>
+                    <span>Order status</span>
+                    <select value={status} onChange={(event) => setStatus(event.target.value)} required autoFocus>
+                      <option value="" disabled>Select a status</option>
+                      {statusOptions.map((value) => <option value={value} key={value}>{value}</option>)}
+                    </select>
                   </label>
-                  <TextField label="Status note" value={note} onChange={setNote} placeholder="Optional factual update" />
-                  <div className="status-modal-grid">
-                    <TextField label="Tracking reference" value={tracking} onChange={setTracking} placeholder="Optional" />
-                    <TextField label="Estimated delivery" value={estimate} onChange={setEstimate} placeholder="Optional" />
-                  </div>
-                  <ToggleField
-                    label="Share note with customer"
-                    description="The note can be used in future WhatsApp status answers. Tracking and delivery details remain customer-visible."
-                    checked={shareNote}
-                    onChange={setShareNote}
-                  />
                   {submitError && <ErrorState message={submitError} />}
                 </div>
                 <div className="status-modal-actions">

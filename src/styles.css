@@ -585,14 +585,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .order-timeline-event time { color: var(--muted); font-size: 11px; line-height: 1.4; }
 .order-timeline-event small { overflow-wrap: anywhere; color: var(--muted); font-size: 11px; line-height: 1.5; }
 .status-modal-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px; background: rgba(9,30,66,.38); backdrop-filter: blur(3px); animation: modal-fade-in .16s ease-out; }
-.status-modal { width: min(620px, 100%); max-height: calc(100vh - 48px); overflow-y: auto; border: 1px solid var(--line); border-radius: 16px; background: white; box-shadow: 0 24px 80px rgba(9,30,66,.2); animation: modal-rise-in .2s ease-out; }
+.status-modal { width: min(440px, 100%); max-height: calc(100vh - 48px); overflow-y: auto; border: 1px solid var(--line); border-radius: 16px; background: white; box-shadow: 0 24px 80px rgba(9,30,66,.2); animation: modal-rise-in .2s ease-out; }
 .status-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 24px 26px 20px; border-bottom: 1px solid var(--line); }
 .status-modal-header h2 { margin: 5px 0 0; color: var(--navy); font-size: 21px; letter-spacing: -.025em; }
 .status-modal-header > button { flex: 0 0 auto; width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; color: var(--muted); background: transparent; cursor: pointer; }
 .status-modal-header > button:hover:not(:disabled) { color: var(--navy); background: var(--card-hover); }
 .status-modal-body { display: flex; flex-direction: column; gap: 18px; padding: 24px 26px; }
-.status-modal-body .toggle-field { min-height: 58px; margin-top: 0; }
-.status-modal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.status-modal-body .field select { min-height: 46px; border-color: var(--line); border-radius: 8px; background-color: white; }
 .status-modal-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 18px 26px; border-top: 1px solid var(--line); background: var(--card-hover); }
 .status-modal-actions .button.primary { min-width: 150px; }
 @keyframes modal-fade-in { from { opacity: 0; } }
@@ -716,7 +715,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .metric-grid button { min-height: 112px; }
   .order-detail-header { align-items: flex-start; }
   .order-detail-back { width: 38px; height: 38px; }
-  .order-spec-grid, .status-modal-grid { grid-template-columns: 1fr; }
+  .order-spec-grid { grid-template-columns: 1fr; }
   .order-spec-item:nth-child(odd) { border-right: 0; }
   .order-spec-item:nth-last-child(2) { border-bottom: 1px solid var(--line); }
   .order-card-heading, .order-ledger-list { padding-inline: 18px; }
